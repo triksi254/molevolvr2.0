@@ -1,0 +1,28 @@
+.root {
+  display: contents;
+}
+
+.button {
+  padding: 5px 10px;
+  border-bottom: solid 2px var(--light-gray);
+  border-radius: 0;
+  color: var(--dark-gray);
+  cursor: pointer;
+  transition:
+    color var(--fast),
+    border-color var(--fast);
+}
+
+.button:hover {
+  border-color: var(--deep);
+  color: var(--deep);
+}
+
+.active {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.content {
+  display: contents;
+}

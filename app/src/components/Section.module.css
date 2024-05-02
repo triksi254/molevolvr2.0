@@ -1,0 +1,24 @@
+.section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 60px max(40px, (100% - var(--content)) / 2);
+  gap: 40px;
+  background: var(--white);
+}
+
+.section:last-child {
+  flex-grow: 1;
+}
+
+.section:nth-child(even) {
+  background: #fafafa;
+}
+
+.fill {
+  background: var(--deep-light) !important;
+}
+
+.full {
+  padding: 40px;
+}

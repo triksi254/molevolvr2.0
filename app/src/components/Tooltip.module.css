@@ -1,0 +1,15 @@
+.content {
+  display: flex;
+  flex-direction: column;
+  max-width: 320px;
+  padding: 10px 15px;
+  gap: 5px;
+  border-radius: var(--rounded);
+  background: var(--off-black);
+  color: var(--white);
+  text-wrap: pretty;
+}
+
+.arrow {
+  fill: var(--off-black);
+}

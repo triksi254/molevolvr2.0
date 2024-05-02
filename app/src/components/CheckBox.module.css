@@ -1,0 +1,23 @@
+.container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-radius: var(--rounded);
+  cursor: pointer;
+}
+
+.check {
+  height: 20px;
+  color: var(--accent);
+  transition: color var(--fast);
+}
+
+.container:hover .check {
+  color: var(--deep);
+}
+
+.required {
+  position: relative;
+  top: -10px;
+  color: var(--accent);
+}
