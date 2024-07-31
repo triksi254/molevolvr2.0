@@ -1,5 +1,0 @@
-# serve /srv
-:80 {
-	root * /srv
-	file_server
-}
