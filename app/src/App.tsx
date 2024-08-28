@@ -14,6 +14,7 @@ import {
   useMatches,
   useRouteLoaderData,
 } from "react-router-dom";
+import { isEmpty } from "lodash";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
@@ -46,8 +47,7 @@ const Layout = () => {
 
   /** scroll to hash in url */
   useEffect(() => {
-    if (!hash) return;
-    scrollTo(hash);
+    if (hash) scrollTo(hash);
   }, [hash]);
 
   return (
@@ -71,7 +71,7 @@ const Layout = () => {
 type Meta = { toc?: true } | undefined;
 
 /** route definitions */
-const routes = [
+export const routes = [
   {
     path: "/",
     element: <Layout />,
@@ -81,11 +81,15 @@ const routes = [
         element: <Home />,
         loader: async () => {
           /** handle 404 redirect */
-          const url = window.sessionStorage.redirect as string;
-          if (url) {
-            console.debug("Redirecting to:", url);
-            window.sessionStorage.removeItem("redirect");
-            return redirect(url);
+          const path = window.sessionStorage.redirectPath || "";
+          const state = JSON.parse(window.sessionStorage.redirectState || "{}");
+          if (!isEmpty(state)) window.history.replaceState(state, "");
+          if (path) {
+            console.debug("Redirecting to:", path);
+            console.debug("With state:", state);
+            window.sessionStorage.removeItem("redirectPath");
+            window.sessionStorage.removeItem("redirectState");
+            return redirect(path);
           } else return null;
         },
       },
@@ -127,6 +131,3 @@ const router = createBrowserRouter(routes, {
 
 /** query client */
 const queryClient = new QueryClient();
-
-/** prefix for localStorage keys */
-export const storageKey = "molevolvr-";

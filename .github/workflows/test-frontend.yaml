@@ -3,12 +3,11 @@ name: Test Frontend
 on:
   pull_request:
     paths:
-      - "frontend/**"
-      - "package.json"
+      - "app/**"
 
 defaults:
   run:
-    working-directory: ./frontend
+    working-directory: ./app
 
 jobs:
   # test that app can build without issues
@@ -16,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Bun
         uses: oven-sh/setup-bun@v1
@@ -24,7 +23,8 @@ jobs:
       - name: Install packages
         run: bunx msw init && bun install
 
-      - if: runner.debug == '1'
+      - name: SSH debug
+        if: runner.debug == '1'
         uses: mxschmitt/action-tmate@v3
 
       - name: Run test
@@ -35,7 +35,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Bun
         uses: oven-sh/setup-bun@v1
@@ -43,7 +43,8 @@ jobs:
       - name: Install packages
         run: bunx msw init && bun install
 
-      - if: runner.debug == '1'
+      - name: SSH debug
+        if: runner.debug == '1'
         uses: mxschmitt/action-tmate@v3
 
       - name: Run test
@@ -54,7 +55,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Bun
         uses: oven-sh/setup-bun@v1
@@ -62,8 +63,59 @@ jobs:
       - name: Install packages
         run: bunx msw init && bun install
 
-      - if: runner.debug == '1'
+      - name: SSH debug
+        if: runner.debug == '1'
         uses: mxschmitt/action-tmate@v3
 
       - name: Run test
         run: bun run test:lint
+
+  # run end to end integration tests
+  test-e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v1
+
+      - name: Install packages
+        run: bun install
+
+      - name: SSH debug
+        if: runner.debug == '1'
+        uses: mxschmitt/action-tmate@v3
+
+      # https://github.com/microsoft/playwright/issues/7249
+
+      - name: Get Playwright version
+        run: |
+          PLAYWRIGHT_VERSION=$(npm ls @playwright/test | grep @playwright | sed 's/.*@//')
+          echo "Playwright Version: $PLAYWRIGHT_VERSION"
+          echo "PLAYWRIGHT_VERSION=$PLAYWRIGHT_VERSION" >> $GITHUB_ENV
+
+      - name: Cache Playwright
+        id: cache-playwright
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ env.PLAYWRIGHT_VERSION }}
+
+      - name: Install Playwright with dependencies
+        if: steps.cache-playwright.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps
+
+      - name: Install Playwright's dependencies
+        if: steps.cache-playwright.outputs.cache-hit == 'true'
+        run: npx playwright install-deps
+
+      - name: Run test
+        run: bun run test:e2e
+
+      - name: Upload test report
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: ./app/playwright-report
+          retention-days: 30

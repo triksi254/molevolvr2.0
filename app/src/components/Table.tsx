@@ -1,6 +1,5 @@
 import type { CSSProperties, HTMLAttributes, ReactNode } from "react";
 import { useCallback, useMemo, useState } from "react";
-import { FaCompressArrowsAlt, FaExpandArrowsAlt } from "react-icons/fa";
 import {
   FaAngleLeft,
   FaAngleRight,
@@ -9,12 +8,14 @@ import {
   FaDownload,
   FaFilter,
   FaMagnifyingGlass,
+  FaMaximize,
+  FaMinimize,
   FaSort,
   FaSortDown,
   FaSortUp,
 } from "react-icons/fa6";
 import { MdFilterAltOff } from "react-icons/md";
-import classNames from "classnames";
+import clsx from "clsx";
 import { clamp, isEqual, pick, sortBy, sum } from "lodash";
 import type { Column, FilterFn, NoInfer } from "@tanstack/react-table";
 import {
@@ -126,6 +127,9 @@ const Table = <Datum extends object>({ cols, rows }: Props<Datum>) => {
     { id: "500", text: 500 },
   ].map((option) => ({ ...option, text: formatNumber(option.text) }));
 
+  /** initial per page */
+  const defaultPerPage = perPageOptions[1]!.id;
+
   /** get column definition (from props) by id */
   const getCol = useCallback((id: string) => cols[Number(id)], [cols]);
 
@@ -233,7 +237,7 @@ const Table = <Datum extends object>({ cols, rows }: Props<Datum>) => {
       sorting: [{ id: "0", desc: false }],
       pagination: {
         pageIndex: 0,
-        pageSize: Number(perPageOptions[0]!.id),
+        pageSize: Number(defaultPerPage),
       },
     },
     /** sync some controls with table state */
@@ -252,11 +256,10 @@ const Table = <Datum extends object>({ cols, rows }: Props<Datum>) => {
 
   return (
     <Flex direction="column">
-      <div className={classNames(classes.scroll, expanded && "expanded")}>
+      <div className={clsx(classes.scroll, expanded && "expanded")}>
         {/* table */}
         <table
           className={classes.table}
-          /** https://tanstack.com/table/v8/docs/guide/migrating#migrate-table-markup */
           aria-rowcount={table.getPrePaginationRowModel().rows.length}
           aria-colcount={cols.length}
         >
@@ -443,8 +446,11 @@ const Table = <Datum extends object>({ cols, rows }: Props<Datum>) => {
           <SelectSingle
             label="Rows"
             layout="horizontal"
+            value={defaultPerPage}
             options={perPageOptions}
-            onChange={(option) => table.setPageSize(Number(option))}
+            onChange={(option) => {
+              table.setPageSize(Number(option));
+            }}
           />
           {/* visible columns */}
           <SelectMulti
@@ -504,7 +510,7 @@ const Table = <Datum extends object>({ cols, rows }: Props<Datum>) => {
           />
           {/* expand/collapse */}
           <Button
-            icon={expanded ? <FaCompressArrowsAlt /> : <FaExpandArrowsAlt />}
+            icon={expanded ? <FaMinimize /> : <FaMaximize />}
             design="hollow"
             tooltip={expanded ? "Collapse table" : "Expand table"}
             onClick={() => setExpanded(!expanded)}
@@ -529,15 +535,21 @@ const Filter = <Datum extends object>({ column, def }: FilterProps<Datum>) => {
 
   /** filter as number range */
   if (type === "number") {
-    const [min = 0, max = 100] = column.getFacetedMinMaxValues() || [];
+    const [min = 0, max = 100] = column.getFacetedMinMaxValues() ?? [];
 
     return (
       <Slider
         label="Filter"
         min={min}
         max={max}
+        step={(max - min) / 100}
         multi
-        value={(column.getFilterValue() as [number, number]) ?? [min, max]}
+        value={
+          (column.getFilterValue() as [number, number] | undefined) ?? [
+            min,
+            max,
+          ]
+        }
         onChange={(value) => {
           /** return as "unfiltered" if value equals min/max range */
           column.setFilterValue(isEqual(value, [min, max]) ? undefined : value);
@@ -557,7 +569,7 @@ const Filter = <Datum extends object>({ column, def }: FilterProps<Datum>) => {
     ).map(({ name, count }) => ({
       id: String(name),
       text: String(name),
-      info: String(count),
+      info: formatNumber(count),
     }));
 
     return (
@@ -582,17 +594,19 @@ const Filter = <Datum extends object>({ column, def }: FilterProps<Datum>) => {
       {
         id: "all",
         text: "All",
-        info: String(sum(Array.from(column.getFacetedUniqueValues().values()))),
+        info: formatNumber(
+          sum(Array.from(column.getFacetedUniqueValues().values())),
+        ),
       },
       {
         id: "true",
         text: "True/Yes",
-        info: String(column.getFacetedUniqueValues().get(true) ?? 0),
+        info: formatNumber(column.getFacetedUniqueValues().get(true) ?? 0),
       },
       {
         id: "false",
         text: "False/No",
-        info: String(column.getFacetedUniqueValues().get(false) ?? 0),
+        info: formatNumber(column.getFacetedUniqueValues().get(false) ?? 0),
       },
     ];
 
@@ -600,7 +614,7 @@ const Filter = <Datum extends object>({ column, def }: FilterProps<Datum>) => {
       <SelectSingle
         label="Filter"
         options={options}
-        value={(column.getFilterValue() as Option["id"]) ?? options[0]!}
+        value={(column.getFilterValue() as Option["id"]) ?? options[0]!.id}
         onChange={(value) =>
           /** return as "unfiltered" if all are selected */
           column.setFilterValue(value === "all" ? undefined : value)
@@ -613,7 +627,7 @@ const Filter = <Datum extends object>({ column, def }: FilterProps<Datum>) => {
   return (
     <TextBox
       placeholder="Search"
-      value={(column.getFilterValue() as string) ?? ""}
+      value={(column.getFilterValue() as string | undefined) ?? ""}
       onChange={column.setFilterValue}
       icon={<FaMagnifyingGlass />}
     />
