@@ -8,7 +8,7 @@ This repo contains the implementation of the MolEvolvR stack, i.e.:
     - `postgres`: configuration for a PostgreSQL database, which stores job information
 
 Most of the data processing is accomplished via the `MolEvolvR` package, which
-is currently available at https://github.com/JRaviLab/molevol_scripts. The stack
+is currently available at https://github.com/JRaviLab/molevolvr. The stack
 simply provides a user-friendly interface for accepting and monitoring the
 progress of jobs, and orchestrates running the jobs on SLURM. The jobs
 themselves call methods of the package at each stage of processing.
