@@ -3,14 +3,14 @@ name: Test Frontend
 on:
   pull_request:
     paths:
-      - "app/**"
+      - "frontend/**"
 
 defaults:
   run:
-    working-directory: ./app
+    working-directory: ./frontend
 
 jobs:
-  # test that app can build without issues
+  # test that frontend can build without issues
   test-build:
     runs-on: ubuntu-latest
     steps:
@@ -30,7 +30,7 @@ jobs:
       - name: Run test
         run: bun run build
 
-  # test that app has no typescript errors
+  # test that frontend has no typescript errors
   test-types:
     runs-on: ubuntu-latest
     steps:
@@ -50,7 +50,7 @@ jobs:
       - name: Run test
         run: bun run test:types
 
-  # test that app is properly formatted and linted
+  # test that frontend is properly formatted and linted
   test-lint:
     runs-on: ubuntu-latest
     steps:
@@ -87,10 +87,10 @@ jobs:
         if: runner.debug == '1'
         uses: mxschmitt/action-tmate@v3
 
-     - name: Install Playwright
+      - name: Install Playwright
         uses: ./.github/actions/install-playwright
         with:
-          working-directory: ./app
+          working-directory: ./frontend
 
       - name: Run test
         run: bun run test:e2e
@@ -99,5 +99,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report
-          path: ./app/playwright-report
+          path: ./frontend/playwright-report
           retention-days: 30
