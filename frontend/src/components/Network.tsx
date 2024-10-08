@@ -438,15 +438,53 @@ const Network = ({ nodes: _nodes, edges: _edges }: Props) => {
       ],
     });
 
-    /** attach listeners */
+    /** reset view */
     graph.current.on("dblclick", () => graph.current?.fit(undefined, padding));
-    graph.current.on("select unselect", "node, edge", (event) =>
+
+    /** select/deselect items */
+    graph.current.on("select unselect", "node, edge", () =>
       setSelectedItems(
-        event.cy
-          .elements(":selected")
-          .map((element) => element.data() as Node | Edge),
+        graph.current
+          ?.elements(":selected")
+          .map((element) => element.data() as Node | Edge) ?? [],
       ),
     );
+
+    /** prevent infinite recursion from pan adjustment */
+    let justPanned = false;
+
+    /** when panning, limit pan */
+    graph.current.on("viewport", () => {
+      if (!graph.current) return;
+
+      if (justPanned) return (justPanned = false);
+      justPanned = true;
+
+      /** get current graph props */
+      const zoom = graph.current.zoom();
+      const pan = graph.current.pan();
+      const width = graph.current.width();
+      const height = graph.current.height();
+      const paddingH = width / 2;
+      const paddingV = height / 2;
+
+      /** get bounding box of graph elements */
+      const { x1, y1, x2, y2 } = graph.current.elements().boundingBox();
+
+      /** limit left pan */
+      if (x2 * zoom + pan.x < paddingH) pan.x = paddingH - x2 * zoom;
+      /** limit up pan */
+      if (y2 * zoom + pan.y < paddingV) pan.y = paddingV - y2 * zoom;
+      /** limit right pan */
+      if (x1 * zoom + pan.x > width - paddingH)
+        pan.x = width - paddingH - x1 * zoom;
+      /** limit down pan */
+      if (y1 * zoom + pan.y > height - paddingV)
+        pan.y = height - paddingV - y1 * zoom;
+
+      /** adjust pan */
+      graph.current.pan(pan);
+    });
   }, [nodes, edges]);
 
   useEffect(() => {
