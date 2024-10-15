@@ -4,9 +4,12 @@
 /** no type def libraries for these libraries */
 declare module "cytoscape-cola";
 declare module "cytoscape-spread";
-// custom-elements.d.ts
+
 declare namespace JSX {
-interface IntrinsicElements {
-'nightingale-msa': any;
-}
+  type IntrinsicElements = {
+    "nightingale-msa": React.DetailedHTMLProps<
+      React.HTMLAttributes<HTMLElement>,
+      HTMLElement
+    >;
+  };
 }
