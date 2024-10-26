@@ -27,6 +27,10 @@ import {
   FaTableCells,
 } from "react-icons/fa6";
 import { sample, uniqueId } from "lodash";
+import type {
+  Region,
+  SequencesMSA,
+} from "@nightingale-elements/nightingale-msa";
 import CustomIcon from "@/assets/custom-icon.svg?react";
 import Ago from "@/components/Ago";
 import Alert from "@/components/Alert";
@@ -39,6 +43,7 @@ import Heading from "@/components/Heading";
 import Link from "@/components/Link";
 import Meta from "@/components/Meta";
 import Network from "@/components/Network";
+import NightingaleMSAWrapper from "@/components/nightingale-wrapper/NightingaleMSAWrapper";
 import NumberBox from "@/components/NumberBox";
 import Popover from "@/components/Popover";
 import Radios from "@/components/Radios";
@@ -55,8 +60,6 @@ import Tooltip from "@/components/Tooltip";
 import { useTheme } from "@/util/hooks";
 import { formatDate, formatNumber } from "@/util/string";
 import tableData from "../../fixtures/table.json";
-import type { SequencesMSA, Region } from "@nightingale-elements/nightingale-msa";
-import NightingaleMSAWrapper from "@/components/nightingale-wrapper/NightingaleMSAWrapper";
 
 /** util func to log change to components for testing */
 const logChange = (...args: unknown[]) => {
@@ -179,11 +182,11 @@ const TestbedPage = () => {
         <Heading level={2} icon={<FaBars />}>
           MSA Visualization
         </Heading>
-        <NightingaleMSAWrapper sequences={mockSequences} features={mockFeatures} />
-
+        <NightingaleMSAWrapper
+          sequences={mockSequences}
+          features={mockFeatures}
+        />
       </Section>
-
-
 
       {/* regular html elements and css classes for basic formatting */}
       <Section>

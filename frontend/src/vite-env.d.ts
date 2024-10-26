@@ -5,11 +5,8 @@
 declare module "cytoscape-cola";
 declare module "cytoscape-spread";
 
-declare namespace JSX {
+namespace JSX {
   type IntrinsicElements = {
-    "nightingale-msa": React.DetailedHTMLProps<
-      React.HTMLAttributes<HTMLElement>,
-      HTMLElement
-    >;
+    "nightingale-msa": JSX.HTMLAttributes<CustomElement>;
   };
 }
